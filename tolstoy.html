@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Толстой - Бородинское поле</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #5d3a1a 0%, #8b5a2b 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <a href="index.html" class="back-btn">← Вернуться</a>
+            <div class="score">⚔️ Баллы: <span id="score">0</span></div>
+        </div>
+        
+        <div class="progress">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">Препятствие 1 из 5</div>
+        </div>
+        
+        <div class="location">
+            <div class="location-icon">⚔️</div>
+            <h3 id="locationTitle">Бородинское поле</h3>
+        </div>
+        
+        <div id="gameContent"></div>
+    </div>
+    
+    <script>
+        const questions = [
+            {
+                location: "Начало войны",
+                question: "В каком году началась Отечественная война 1812 года?",
+                options: ["1805", "1812", "1815"],
+                correct: 1,
+                explanation: "Отечественная война началась 12 июня 1812 года, когда армия Наполеона вторглась в Россию."
+            },
+            {
+                location: "Кутузов",
+                question: "Какую стратегию избрал Кутузов после Бородинского сражения?",
+                options: [
+                    "Немедленное контрнаступление",
+                    "Отступление и сдачу Москвы",
+                    "Оборону в Москве"
+                ],
+                correct: 1,
+                explanation: "Кутузов принял решение оставить Москву, чтобы сохранить армию. «С потерей Москвы не потеряна Россия»."
+            },
+            {
+                location: "Андрей Болконский",
+                question: "Что стало причиной гибели Андрея Болконского?",
+                options: [
+                    "Смертельное ранение на Бородинском поле",
+                    "Болезнь",
+                    "Дуэль"
+                ],
+                correct: 0,
+                explanation: "Князь Андрей был смертельно ранен осколком гранаты на Бородинском поле."
+            },
+            {
+                location: "Наташа Ростова",
+                question: "Как Наташа Ростова помогает раненым после Бородинского сражения?",
+                options: [
+                    "Становится медсестрой в госпитале",
+                    "Убеждает родителей отдать подводы для раненых",
+                    "Уезжает из Москвы"
+                ],
+                correct: 1,
+                explanation: "Наташа уговаривает родителей отдать подводы, предназначенные для вывоза вещей, для перевозки раненых."
+            },
+            {
+                location: "Философия Толстого",
+                question: "Как Толстой в романе «Война и мир» относится к роли личности в истории?",
+                options: [
+                    "Личность определяет ход истории",
+                    "Историей движут массы, а не отдельные личности",
+                    "История — это случайность"
+                ],
+                correct: 1,
+                explanation: "Толстой утверждает, что историей движут народные массы, а великие личности лишь следуют исторической необходимости."
+            }
+        ];
+        
+        let currentQuestion = 0;
+        let score = 0;
+        let answerLocked = false;
+        
+        const scoreElement = document.getElementById('score');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const gameContent = document.getElementById('gameContent');
+        
+        function updateProgress() {
+            const percent = (currentQuestion / questions.length) * 100;
+            progressFill.style.width = percent + '%';
+            progressText.textContent = `Препятствие ${currentQuestion + 1} из ${questions.length}`;
+            scoreElement.textContent = score;
+        }
+        
+        function showFinalScreen() {
+            const totalPossible = questions.length * 10;
+            const percent = (score / totalPossible) * 100;
+            let prizeQuote = "";
+            let prizeIcon = "";
+            
+            if (percent >= 80) {
+                prizeQuote = "«Всё, что я знаю, я знаю благодаря тому, что люблю» — Л.Н. Толстой";
+                prizeIcon = "🏆";
+            } else if (percent >= 50) {
+                prizeQuote = "«Нет величия там, где нет простоты, добра и правды» — Л.Н. Толстой";
+                prizeIcon = "📖";
+            } else {
+                prizeQuote = "«Чем больше мы живём духом, тем менее зависим от того, что нас окружает...» Перечитай роман и попробуй снова!";
+                prizeIcon = "🔄";
+            }
+            
+            gameContent.innerHTML = `
+                <div class="final-screen">
+                    <div class="final-icon">${prizeIcon}</div>
+                    <h2>Бородинское сражение пройдено!</h2>
+                    <div class="final-score">${score} / ${totalPossible} баллов</div>
+                    <div class="prize">
+                        <strong>📜 Литературный приз:</strong><br>
+                        "${prizeQuote}"
+                    </div>
+                    <a href="index.html" class="reset-btn">Выбрать другого писателя →</a>
+                </div>
+            `;
+        }
+        
+        function showQuestion() {
+            if (currentQuestion >= questions.length) {
+                showFinalScreen();
+                return;
+            }
+            
+            const q = questions[currentQuestion];
+            
+            gameContent.innerHTML = `
+                <div class="location">
+                    <div class="location-icon">⚔️</div>
+                    <h3>${q.location}</h3>
+                </div>
+                <div class="question-card">
+                    <div class="question-text">${q.question}</div>
+                    <div class="options" id="options">
+                        ${q.options.map((opt, idx) => `<div class="option" data-index="${idx}">${opt}</div>`).join('')}
+                    </div>
+                    <button class="next-btn" id="nextBtn" disabled>Далее →</button>
+                    <div id="feedback" class="feedback"></div>
+                </div>
+            `;
+            
+            answerLocked = false;
+            
+            const options = document.querySelectorAll('.option');
+            const nextBtn = document.getElementById('nextBtn');
+            const feedbackDiv = document.getElementById('feedback');
+            
+            options.forEach(opt => {
+                opt.addEventListener('click', () => {
+                    if (answerLocked) return;
+                    
+                    const selectedIdx = parseInt(opt.dataset.index);
+                    const isCorrect = (selectedIdx === q.correct);
+                    
+                    if (isCorrect) {
+                        score += 10;
+                        scoreElement.textContent = score;
+                        opt.classList.add('correct');
+                        feedbackDiv.innerHTML = `✅ Правильно! ${q.explanation}`;
+                        feedbackDiv.className = 'feedback correct-feedback';
+                    } else {
+                        opt.classList.add('wrong');
+                        const correctText = q.options[q.correct];
+                        feedbackDiv.innerHTML = `❌ Неправильно. Правильный ответ: «${correctText}». ${q.explanation}`;
+                        feedbackDiv.className = 'feedback wrong-feedback';
+                        
+                        options[q.correct].classList.add('correct');
+                    }
+                    
+                    answerLocked = true;
+                    options.forEach(o => o.classList.add('disabled'));
+                    nextBtn.disabled = false;
+                });
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                currentQuestion++;
+                updateProgress();
+                showQuestion();
+            });
+        }
+        
+        updateProgress();
+        showQuestion();
+    </script>
+</body>
+</html>
